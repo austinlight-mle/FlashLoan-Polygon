@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.28;
 
 library BytesLib {
     // https://ethereum.stackexchange.com/questions/32003/concat-two-bytes-arrays-with-assembly
