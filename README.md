@@ -12,4 +12,4 @@ npx hardhat node
 npx hardhat ignition deploy ./ignition/modules/Lock.ts
 ```
 
-`npx hardhat node --fork --network polygon`
+`npx hardhat node --fork https://polygon-mainnet.g.alchemy.com/v2/%ALCHEMY_API_KEY%`
