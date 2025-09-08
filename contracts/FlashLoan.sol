@@ -21,7 +21,7 @@ import "@openzeppelin/contracts/utils/math/SignedMath.sol";
 
 import "hardhat/console.sol";
 
-contract Flashloan is IFlashloan, DodoBase {
+contract Flashloan is IFlashloan, DodoBase, FlashloanValidation {
     using SignedMath for uint256;
 
     event SentProfit(address recipient, uint256 amount);
@@ -108,7 +108,7 @@ contract Flashloan is IFlashloan, DodoBase {
         uint256 profit = IERC20(loanToken).balanceOf(address(this));
         IERC20(loanToken).transfer(msg.sender, profit);
 
-        emit SentProfit(owner());
+        emit SentProfit(msg.sender, profit);
     }
 
     /**
@@ -180,7 +180,7 @@ contract Flashloan is IFlashloan, DodoBase {
         approveToken(path[0], address(swapRouter), amountIn);
 
         amountOut = swapRouter.exactInputSingle(
-            ISwapRouter.ExactInputParams({
+            ISwapRouter.ExactInputSingleParams({
                 tokenIn: path[0],
                 tokenOut: path[1],
                 fee: fee,
@@ -221,7 +221,7 @@ contract Flashloan is IFlashloan, DodoBase {
             (address, address, address)
         );
 
-        address[] memory dodoPairs = new address[][1];
+        address[] memory dodoPairs = new address[](1);
         dodoPairs[0] = dodoV2Pool;
 
         uint256 directions = IDODO(dodoV2Pool)._BASE_TOKEN_() == path[0] ? 0 : 1; // Finds the direction of the swap

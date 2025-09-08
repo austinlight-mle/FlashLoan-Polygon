@@ -2,7 +2,7 @@
 pragma solidity ^0.8.28;
 
 interface IDODOProxy {
-    function dodoSwapV2TopkenToToken(
+    function dodoSwapV2TokenToToken(
         address fromToken,
         address toToken,
         uint256 fromTokenAmount,
@@ -10,6 +10,6 @@ interface IDODOProxy {
         address[] memory dodoPairs,
         uint256 directions,
         bool isIncentive,
-        address deadLine
+        uint256 deadLine
     ) external returns (uint256 returnAmount);
 }
