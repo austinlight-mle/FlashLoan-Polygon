@@ -33,7 +33,7 @@ export type Protocol = {
 };
 
 export type DeployDODOFlashloanParams = {
-  wallet: ethers.Wallet;
+  wallet: ethers.Wallet | ethers.JsonRpcSigner;
 };
 
 export type IToken = {

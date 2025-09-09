@@ -13,3 +13,4 @@ npx hardhat ignition deploy ./ignition/modules/Lock.ts
 ```
 
 `npx hardhat node --fork https://polygon-mainnet.g.alchemy.com/v2/%ALCHEMY_API_KEY%`
+`npx hardhat test test/index.test.ts --network localhost`

@@ -4,7 +4,7 @@ import { Flashloan } from "../typechain-types";
 export const deployContract = async (
   factoryType: any,
   args: Array<any> = [],
-  wallet: ethers.Wallet,
+  wallet: ethers.Wallet | ethers.JsonRpcSigner,
 ) => {
   const factory = new ethers.ContractFactory(
     factoryType.abi,

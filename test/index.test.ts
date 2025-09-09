@@ -5,19 +5,34 @@ import { dodoV2Pool, Protocols } from "../constants";
 import { findRouterByProtocol } from "../utils/findRouterByProtocol";
 import { ERC20Token } from "../constants/tokens";
 import { executeFlashloan } from "../scripts/executeFlashloan";
+import { impersonateFundERC20 } from "../utils/funding";
+import { ERC20__factory } from "../typechain-types";
 
 require("dotenv").config();
 
 describe("DODO Flashloan", () => {
   it("Execute Flashloan", async () => {
-    const providerUrl = "http://localhost:8545";
+    const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
 
-    const privateKey = process.env.PRIVATE_KEY;
-
-    const wallet = new ethers.Wallet(privateKey!);
+    const wallet = await provider.getSigner(0);
 
     const Flashloan = await deployDodoFlashloan({
       wallet,
+    });
+
+    const tokenContract = ERC20__factory.connect(
+      ERC20Token.WETH?.address,
+      provider,
+    );
+
+    const mrWhale = "0x82E51a8304156F96C6f01e4aE3C2554D0dE5d156"; // whale address with lots of WETH
+
+    await impersonateFundERC20({
+      sender: mrWhale,
+      tokenContract,
+      recipient: await Flashloan.getAddress(),
+      decimals: 18,
+      amount: "1",
     });
 
     const params: FlashLoanParams = {

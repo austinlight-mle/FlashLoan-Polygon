@@ -21,7 +21,7 @@ import "@openzeppelin/contracts/utils/math/SignedMath.sol";
 
 import "hardhat/console.sol";
 
-contract Flashloan is IFlashloan, DodoBase, FlashloanValidation {
+contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
     using SignedMath for uint256;
 
     event SentProfit(address recipient, uint256 amount);

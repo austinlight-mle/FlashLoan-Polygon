@@ -5,10 +5,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract Withraw is Ownable, ReentrancyGuard {
-    event Withrawal(address indexed sender, uint256 amount);
+contract Withdraw is Ownable, ReentrancyGuard {
+    event Withdrawal(address indexed sender, uint256 amount);
 
-    constructor() Ownable(msg.sender) {}
+    constructor() {}
 
     function withdrawToken(
         IERC20 token,
@@ -17,6 +17,6 @@ contract Withraw is Ownable, ReentrancyGuard {
     ) public onlyOwner nonReentrant {
         require(token.balanceOf(address(this)) >= _value, "Insufficient balance");
         SafeERC20.safeTransfer(token, _to, _value);
-        emit Withrawal(_to, _value);
+        emit Withdrawal(_to, _value);
     }
 }
