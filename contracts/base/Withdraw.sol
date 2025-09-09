@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 contract Withdraw is Ownable, ReentrancyGuard {
     event Withdrawal(address indexed sender, uint256 amount);
 
-    constructor() {}
+    constructor() Ownable(msg.sender) {}
 
     function withdrawToken(
         IERC20 token,

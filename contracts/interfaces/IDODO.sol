@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
+
 interface IDODO {
     function flashLoan(
         uint256 baseAmount,

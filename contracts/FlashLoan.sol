@@ -24,7 +24,7 @@ import "hardhat/console.sol";
 contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
     using SignedMath for uint256;
 
-    event SentProfit(address recipient, uint256 amount);
+    event SentProfit(address recipient, uint256 profit);
     event SwapFinished(address token, uint256 amount);
 
     /**
