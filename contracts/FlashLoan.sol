@@ -4,6 +4,7 @@ pragma solidity ^0.8.28;
 import "./interfaces/IFlashloan.sol";
 
 import "./interfaces/IDODO.sol";
+import "./interfaces/IDODOV2.sol";
 import "./interfaces/IDODOProxy.sol";
 
 import "./base/DodoBase.sol";
