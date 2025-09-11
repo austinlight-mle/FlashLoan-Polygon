@@ -44,21 +44,14 @@ contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
 
         address loanToken = RouteUtils.getInitialToken(params.routes[0]);
 
-        console.log(
-            "Contract balance before flashloan: ",
-            IERC20(loanToken).balanceOf(address(this))
-        );
+        console.log("Contract balance before flashloan: ", IERC20(loanToken).balanceOf(address(this)));
 
         // Initiates the base token of the DODO pool.
         address btoken = IDODO(params.flashLoanPool)._BASE_TOKEN_();
         console.log("Base token address: ", btoken);
 
-        uint256 baseAmount = IDODO(params.flashLoanPool)._BASE_TOKEN_() == loanToken
-            ? params.loanAmount
-            : 0;
-        uint256 quoteAmount = IDODO(params.flashLoanPool)._BASE_TOKEN_() == loanToken
-            ? 0
-            : params.loanAmount;
+        uint256 baseAmount = IDODO(params.flashLoanPool)._BASE_TOKEN_() == loanToken ? params.loanAmount : 0;
+        uint256 quoteAmount = IDODO(params.flashLoanPool)._BASE_TOKEN_() == loanToken ? 0 : params.loanAmount;
 
         IDODO(params.flashLoanPool).flashLoan(baseAmount, quoteAmount, address(this), data);
     }
@@ -76,20 +69,14 @@ contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
         address loanToken = RouteUtils.getInitialToken(decoded.routes[0]);
 
         // Ensure the contract has received the flashloan amount
-        require(
-            IERC20(loanToken).balanceOf(address(this)) >= decoded.loanAmount,
-            "Fail to borrow tokens"
-        );
+        require(IERC20(loanToken).balanceOf(address(this)) >= decoded.loanAmount, "Fail to borrow tokens");
 
         console.log(IERC20(loanToken).balanceOf(address(this)), " Contract balance after loan");
 
         // Execute the series of swaps as per the provided routes
         routeLoop(decoded.routes, decoded.loanAmount);
 
-        console.log(
-            "Loan Token balance after borrow and swap: ",
-            IERC20(loanToken).balanceOf(address(this))
-        );
+        console.log("Loan Token balance after borrow and swap: ", IERC20(loanToken).balanceOf(address(this)));
 
         emit SwapFinished(loanToken, IERC20(loanToken).balanceOf(address(this)));
 
@@ -116,10 +103,7 @@ contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
      * @param routes An array of Route structs defining the swap paths and protocols.
      * @param totalAmount The total amount of the initial token to be swapped.
      */
-    function routeLoop(
-        Route[] memory routes,
-        uint256 totalAmount
-    ) internal checkTotalRoutePart(routes) {
+    function routeLoop(Route[] memory routes, uint256 totalAmount) internal checkTotalRoutePart(routes) {
         for (uint256 i = 0; i < routes.length; i++) {
             // Calculate the amount to be used in the current route based on its part of the total loan
             // If routes[i].part is 10000 (100%), then the amount to be used is the total amount.
