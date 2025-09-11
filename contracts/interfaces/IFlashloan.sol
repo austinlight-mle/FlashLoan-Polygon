@@ -12,6 +12,8 @@ contract IFlashloan {
         uint8 protocol;
         bytes data;
         address[] path;
+        uint256 amountOutMinV3;
+        uint160 sqrtPriceLimitX96;
     }
 
     /**

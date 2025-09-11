@@ -43,7 +43,7 @@ async function main() {
             provider,
         });
 
-        const quotes = [sushiQuote, quickQuote, apeQuote];
+        const quotes = [sushiQuote, quickQuote];
 
         const min = quotes.reduce((min, obj) => (obj.quote < min.quote ? obj : min));
         const max = quotes.reduce((max, obj) => (obj.quote > max.quote ? obj : max));
@@ -67,7 +67,11 @@ async function main() {
             // execute arbitrage
 
             const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
-            const Flashloan = new ethers.Contract(process.env.FLASHLOAN_ADDRESS!, flashloan.abi, provider);
+            const Flashloan = new ethers.Contract(
+                process.env.FLASHLOAN_CONTRACT_ADDRESS!,
+                flashloan.abi,
+                provider,
+            );
 
             const params: FlashLoanParams = {
                 flashLoanContractAddress: Flashloan.target.toString(),

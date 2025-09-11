@@ -27,6 +27,8 @@ contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
     event SentProfit(address recipient, uint256 profit);
     event SwapFinished(address token, uint256 amount);
 
+    uint256 public slippage = 1;
+
     /**
      * @dev Initiates a flashloan transaction with DODO protocol.
      * @param params Encoded parameters for the flashloan operation.
@@ -104,7 +106,8 @@ contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
      * @param totalAmount The total amount of the initial token to be swapped.
      */
     function routeLoop(Route[] memory routes, uint256 totalAmount) internal checkTotalRoutePart(routes) {
-        for (uint256 i = 0; i < routes.length; i++) {
+        uint256 length = routes.length;
+        for (uint256 i = 0; i < length; ++i) {
             // Calculate the amount to be used in the current route based on its part of the total loan
             // If routes[i].part is 10000 (100%), then the amount to be used is the total amount.
             // This helps if you want to use a percentage of the total amount for this swap and keep the rest for other purposes
@@ -127,7 +130,8 @@ contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
         // hop1 => path = [WETH, USDC] -- path[0] = WETH | amountIn = 10
         // hop2 => path = [USDC, DAI] -- path[0] = USDC | amountIn = 15000
 
-        for (uint256 i = 0; i < route.hops.length; i++) {
+        uint256 length = route.hops.length;
+        for (uint256 i = 0; i < length; ++i) {
             // Execute the token swap for the current hop and updates the amount for the next hop.
             // The pickProtocol function determines the specific protocol to use for the swap.
             amountIn = pickProtocol(route.hops[i], amountIn);
@@ -137,7 +141,7 @@ contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
     function pickProtocol(Hop memory hop, uint256 amountIn) internal returns (uint256 amountOut) {
         // Checks the protocol specified in the hop
         if (hop.protocol == 0) {
-            amountOut = uniswapV3(hop.data, amountIn, hop.path);
+            amountOut = uniswapV3(hop.data, amountIn, hop.path, hop.amountOutMinV3, hop.sqrtPriceLimitX96);
             console.log("Amount received from the protocol 0: ", amountOut);
         } else if (hop.protocol < 8) {
             // If the protocol is Uniswap V2 or similar (protocol 1-7)
@@ -155,7 +159,9 @@ contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
     function uniswapV3(
         bytes memory data,
         uint256 amountIn,
-        address[] memory path
+        address[] memory path,
+        uint256 amountOutMinV3,
+        uint160 sqrtPriceLimitX96
     ) internal returns (uint256 amountOut) {
         (address router, uint24 fee) = abi.decode(data, (address, uint24));
 
@@ -171,8 +177,8 @@ contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
                 recipient: address(this),
                 deadline: block.timestamp + 60,
                 amountIn: amountIn,
-                amountOutMinimum: 0,
-                sqrtPriceLimitX96: 0
+                amountOutMinimum: amountOutMinV3,
+                sqrtPriceLimitX96: sqrtPriceLimitX96
             })
         );
     }
@@ -186,9 +192,12 @@ contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
 
         approveToken(path[0], router, amountIn);
 
+        uint[] memory amountOutMin = IUniswapV2Router(router).getAmountsOut(amountIn, path);
+        uint256 minReturnAmount = (amountOutMin[1] * slippage) / 100;
+
         amountOut = IUniswapV2Router(router).swapExactTokensForTokens(
             amountIn,
-            1,
+            minReturnAmount,
             path,
             address(this),
             block.timestamp + 60
@@ -212,6 +221,9 @@ contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
 
         approveToken(path[0], dodoApprove, amountIn);
 
+        (int256 receivedQuoteAmount, ) = IDODOV2(dodoV2Pool).querySellBase(msg.sender, amountIn);
+        uint256 minReturnAmount = (uint256(receivedQuoteAmount) * (100 - slippage)) / 100;
+
         amountOut = IDODOProxy(dodoProxy).dodoSwapV2TokenToToken(
             path[0],
             path[1],
@@ -226,5 +238,9 @@ contract Flashloan is IFlashloan, DodoBase, FlashloanValidation, Withdraw {
 
     function approveToken(address token, address to, uint256 amountIn) internal {
         require(IERC20(token).approve(to, amountIn), "Approve failed");
+    }
+
+    function setSlippage(uint256 _slippage) external onlyOwner {
+        slippage = _slippage;
     }
 }
